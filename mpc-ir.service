@@ -1,0 +1,8 @@
+[Unit]
+Description=Run MPC command based on inputs
+
+[Service]
+WorkingDirectory=/home/pi/controller
+ExecStart=nodejs /home/pi/controller/main.js
+[Install]
+WantedBy=multi-user.target
