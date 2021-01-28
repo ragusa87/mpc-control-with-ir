@@ -2,7 +2,7 @@
 Description=Map IR codes
 
 [Service]
-ExecStart=ir-keytable -c -w /etc/rc_keymaps/grunding
+ExecStart=ir-keytable -c -w /etc/rc_keymaps/L336
 
 [Install]
 WantedBy=multi-user.target

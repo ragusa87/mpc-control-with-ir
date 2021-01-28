@@ -2,7 +2,12 @@
 Description=Run MPC command based on inputs
 
 [Service]
+User=pi
+Group=pi
 WorkingDirectory=/home/pi/controller
 ExecStart=nodejs /home/pi/controller/main.js
+Restart=always
+RestartSec=30
+Environment=XDG_RUNTIME_DIR="/run/user/1000"
 [Install]
 WantedBy=multi-user.target
