@@ -1,6 +1,6 @@
 const LinuxInputListener = require('linux-input-device')
 const input = new LinuxInputListener('/dev/input/event0')
-
+const path = require('path')
 // Wait for ms milliseconds
 function sleep (ms) {
   return new Promise(resolve => { console.log('> sleep ' + ms); setTimeout(resolve, ms) })
@@ -14,17 +14,19 @@ function run (cmd) {
     function trace (error, stdout, stderr) {
       if (error) {
         console.error(stderr)
+        console.log(stdout)
         reject(error, stderr)
         return
       }
       console.log(stdout)
+      console.error(stderr)
       resolve(stdout, stderr)
     }
     exec(cmd, trace).unref()
-  })
+  }).catch(exception => { if (cmd.indexOf('espeak') === -1) { say(('' + exception).substring(0, 40)) } })
 }
 
-// Execute actions one after another
+// Execute actions callbacks one after another
 async function chain (actions) {
   for (let i = 0; i < actions.length; i++) {
     await actions[i]()
@@ -35,7 +37,7 @@ async function chain (actions) {
 async function say (text) {
   // for mbrola languages, install mbrola + mbrola-us1 packages.
   // see https://raspberry-pi.fr/faire-parler-raspberry-pi-espeak/
-  await run('espeak -v mb-us1 -a 200 "' + text + '"')
+  await run('espeak -v mb-us1 "' + text + '"')
 }
 
 // Keycodes from https://github.com/spotify/linux/blob/master/include/linux/input.h
@@ -87,7 +89,12 @@ commands.set(KEY_NEXTSONG, () => run('mpc next'))
 commands.set(KEY_PREVIOUSSONG, () => run('mpc prev'))
 commands.set(KEY_F11, () => run('mpc random on'))
 commands.set(KEY_STOP, () => run('mpc stop'))
-commands.set(KEY_INFO, () => run('~/ueboom.sh'))
+commands.set(KEY_INFO, () => {
+  chain([
+    () => say('u e boom'),
+    () => run(path.join(__dirname, '/ueboom.sh'))
+  ])
+})
 commands.set(KEY_NUMERIC_0, () => {
   chain([
     () => run('mpc clear'),
