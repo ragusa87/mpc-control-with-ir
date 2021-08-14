@@ -61,6 +61,7 @@ const KEY_NUMERIC_3 = 0x0203
 const KEY_NUMERIC_4 = 0x0204
 const KEY_NUMERIC_5 = 0x0205
 const KEY_NUMERIC_6 = 0x0206
+const KEY_NUMERIC_7 = 0x0207
 const KEY_FORWARD = 0x009f
 const KEY_BACK = 0x009e
 const KEY_TIME = 0x0167
@@ -122,6 +123,7 @@ commands.set(KEY_NUMERIC_3, () => run('~/play.sh Muse'))
 commands.set(KEY_NUMERIC_4, () => run('~/play.sh Twenty+One+Pilots'))
 commands.set(KEY_NUMERIC_5, () => run('~/play.sh Rammstein'))
 commands.set(KEY_NUMERIC_6, () => run('~/play.sh Marilyn+Manson'))
+commands.set(KEY_NUMERIC_7, () => run('~/play.sh ACDC'))
 commands.set(KEY_TIME, () => {
   run('mpc status').then(output => say(output.split('\n').shift()))
 })
