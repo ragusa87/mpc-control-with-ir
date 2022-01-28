@@ -56,6 +56,7 @@ const KEY_PAUSE = 119
 const KEY_MUTE = 0x0071
 const KEY_INFO = 0x166
 const KEY_STOP = 128
+const KEY_EJECT = 161
 const KEY_VOLUMEDOWN = 114
 const KEY_VOLUMEUP = 115
 const KEY_NEXTSONG = 163
@@ -280,6 +281,7 @@ mode0.set(KEY_VIDEO_NEXT, nextMode)
 mode0.set(KEY_F11, () => run('mpc random on'))
 mode0.set(KEY_STOP, () => run('mpc stop'))
 mode0.set(KEY_INFO, () => pairUeBoom())
+mode0.set(KEY_EJECT, () => run('~/play.sh random 1'))
 
 // Browse by artists
 mode0.set(KEY_MENU, () => artistListLoad(true).then((nb) => say('Reloaded ' + nb + ' artists')))
