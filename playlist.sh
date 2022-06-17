@@ -1,11 +1,20 @@
 #!/bin/bash
 
-if [ "$1" = "" ]; then
+NAME=$1
+if [ "$NAME" = "" ]; then
  echo "add a search term"
  exit 1
 fi
 
-if [ "$1" = "random" ]; then
+FLAGS=""
+if [ "$1" = "-E" ]; then
+ FLAGS="-E"
+ shift
+ NAME=$1
+fi
+ 
+
+if [ "$NAME" = "random" ]; then
  NUMBER=${2:-5}
  mpc clear
 
@@ -18,8 +27,8 @@ done <<< "`mpc lsplaylists | shuf | head -n $NUMBER | tac | tr -s ' ' '+'`"
 fi
 
 
-name=`echo "$1" | tr -s ' ' '+'`
+name=`echo "$NAME" | tr -s ' ' '+'`
 echo "Search $name"
 mpc clear
-mpc lsplaylists | grep -i "$name" | mpc load
+mpc lsplaylists | grep -i $FLAGS "$name" | mpc load
 mpc play
