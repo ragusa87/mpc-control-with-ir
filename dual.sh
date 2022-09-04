@@ -18,6 +18,7 @@ ID=$(pactl list sink-inputs short | grep native | awk '{print $1}')
 if [ ! -z "$ID" ] && [ ! -z "$DUAL_ID" ]; then
 	echo "Moving sink $ID to source $DUAL_ID"
 	pactl move-sink-input $ID $DUAL_ID
+	pactl set-default-sink $DUAL_ID
 else
         echo "Unable to find sink or source. Is something playing ?"
         pactl list sources short

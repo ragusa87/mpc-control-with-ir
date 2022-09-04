@@ -117,7 +117,7 @@ async function say (text, convertSpecialChars = false) {
 
   // for mbrola languages, install mbrola + mbrola-us1 packages.
   // see https://raspberry-pi.fr/faire-parler-raspberry-pi-espeak/
-  await run('espeak -v mb-us1 "' + text + '"')
+  await run('espeak -v mb-us1 "' + text + '" --stdout | paplay')
 }
 
 // Read the first line of "mpc status" who should be the playing song.
