@@ -19,9 +19,9 @@ const modesMap = [mode0, mode1, mode2]
 
 // List of Artists/Actions to play with the key 0-9
 const favoriteList = [
-  [playCouleur3], // mode 0 key 0
-  [playFavorites],
-  ['Sytem of a Down'],
+  [() => playPlaylist('Couleur3')], // mode 0 key 0
+  [() => playPlaylist('Radio Rouge FM')],
+  ['System of A Down'],
   ['Muse'],
   ['Twenty One Pilots'],
   ['Rammstein'],
@@ -129,7 +129,14 @@ async function sayMpcStatus () {
 async function artist (name, sayname) {
   return chain([
     () => say((sayname || name), true),
-    () => run('~/play.sh ' + name.replace(/ /g, '+'))
+    () => run('~/play.sh "' + name + '"')
+  ])
+}
+
+async function light (argsString) {
+  return await chain([
+    () => say('light ' + argsString, true),
+    () => run(path.join(__dirname, '/light.sh') + ' ' + argsString)
   ])
 }
 
@@ -141,26 +148,12 @@ async function pairUeBoom () {
   ])
 }
 
-// Play couleur3, as it's a stream, it's slow to init.
-async function playCouleur3 () {
+// Play a playlist with random order
+async function playPlaylist (name) {
   return await chain([
-    () => say('Couleur 3'),
+    () => say('Playlist ' + name),
     () => run('mpc clear'),
-    () => sleep(500),
-    () => run('mpc load Couleur3'),
-    () => sleep(500),
-    () => run('mpc stop'),
-    () => sleep(500),
-    () => run('mpc play')
-  ])
-}
-
-// Play the "favorite" playlist
-async function playFavorites () {
-  return await chain([
-    () => say('Favorites'),
-    () => run('mpc clear'),
-    () => run('mpc load Favorites'),
+    () => run('mpc load "' + name + '"'),
     () => sleep(500),
     () => run('mpc random'),
     () => run('mpc shuffle'),
@@ -294,7 +287,10 @@ mode0.set(KEY_TIME, () => sayMpcStatus())
 
 // Power off only on mode 1 for safety
 mode1.set(KEY_WAKEUP, () => say('Powering off').then(() => run('sudo systemctl poweroff')))
-
+mode1.set(KEY_PAUSE, () => light('scene_recall 4'))
+mode1.set(KEY_PLAY, () => light('scene_recall 8'))
+mode1.set(KEY_STOP, () => light('state on'))
+mode1.set(KEY_EJECT, () => light('state off'))
 // Map key KEY_NUMERIC_0 to KEY_NUMERIC_9 in each mode
 modesMap.forEach((map, index) => {
   for (let key = 0; key < 10; key++) {

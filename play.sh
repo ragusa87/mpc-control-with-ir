@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -x
 
 if [ "$1" = "" ]; then
  echo "add a search term"
@@ -14,13 +14,13 @@ while read -r i; do
   echo $i
   #mpc search artist "$i" | grep local | mpc add;
   mpc search artist "$i" | grep -v spotify | mpc add;
-done <<< "`mpc list artist | shuf | head -n $NUMBER | tac | tr -s ' ' '+'`"
+done <<< "`mpc list artist | shuf | head -n $NUMBER | tac`" # | tr -s ' ' '+'`"
  mpc play
  exit 0
 fi
 
 
-name=`echo "$1" | tr -s ' ' '+'`
+name=`echo "$1"` # | tr -s ' ' '+'`
 echo "Search $name"
 mpc clear
 mpc search artist "$name" | grep -v spotify | mpc add
