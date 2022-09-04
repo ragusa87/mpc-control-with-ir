@@ -151,7 +151,7 @@ async function pairUeBoom () {
 // Play a playlist with random order
 async function playPlaylist (name) {
   return await chain([
-    () => say('Playlist ' + name),
+    () => say(name),
     () => run('mpc clear'),
     () => run('mpc load "' + name + '"'),
     () => sleep(500),
