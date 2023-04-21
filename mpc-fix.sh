@@ -1,12 +1,16 @@
 #!/bin/bash
 set -xe
+
+# MPC hangs if playing rtp files, the SIGTEM has no effect neither.
+# kills it, remove the current state and start it again
+
 STATEFILE=/var/lib/mpd/state
 
 if [ -f $STATEFILE ]; then
         cat $STATEFILE
 	hasRtp=$(cat $STATEFILE | grep rtp)
 	if [[ "$hasRtp" == "" ]]; then
-	        echo "Remove current status"	
+		echo "Remove current status"
 		echo "" > $STATEFILE
 	fi
 fi
