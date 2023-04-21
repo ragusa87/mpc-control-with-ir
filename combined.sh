@@ -1,21 +1,25 @@
 #!/bin/bash
 set -e
+# Make sure the "module-combine-sink" is loaded
+# then set it as default and redirect all sinks to it
 
+# List sinks
 echo "SINKS:"
 pactl list sinks | awk '/Name|device.description|Source|Sink/ { print $0 }'
 
+# List inputs
 echo ""
 echo "Inputs"
 pactl list sink-inputs | awk '/Sink:|Client:|media\.name|application.name/ {print $0};'
 echo ""
 
+# Make sure the module is loaded
 cmd=$(pactl list | grep combined)
 if [ -z "$cmd" ]; then
   pactl load-module module-combine-sink sink_name=combined
 else
    echo "combine module already loaded"
 fi
-
 
 # Find the dual source's id
 DUAL_ID=$(pactl list sinks short | grep combine | head -1 |awk '{print $1}')

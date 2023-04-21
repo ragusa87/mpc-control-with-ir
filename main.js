@@ -10,39 +10,36 @@ let altmode = 0
 let artistIndex = -1
 let artistList = []
 
-// Map all the commands by keys
-const mode0 = new Map()
-const mode1 = new Map()
-const mode2 = new Map()
 // To select the right command-map based on the current mode
-const modesMap = [mode0, mode1, mode2]
+const modesMap = [new Map(), new Map(), new Map()]
 
-// List of Artists/Actions to play with the key 0-9
+// List of Actions to play with the key 0-9 in each mode
+// (mode 0 => index 0-9; mode 1 => index 10-19; mode 2 => index 20-29, etc)
 const favoriteList = [
-  [() => playPlaylist('Couleur3')], // mode 0 key 0
-  [() => playPlaylist('Radio Rouge FM')],
-  ['System of A Down'],
-  ['Muse'],
-  ['Twenty One Pilots'],
-  ['Rammstein'],
-  ['Marilyn Manson'],
-  ['ACDC', 'A.C.D.C'],
-  ['Lofofora'],
-  ['Korn'],
-  ['Imagine Dragons'], // mode 1 key 0
-  ['Placebo'],
-  ['Prodigy'],
-  ['Evanescence'],
-  ['IAM', 'I.A.M'],
-  ['Brell'],
-  ['Slipknot', 'Slip-Knot'],
-  ['Noir désir'],
-  ['Architects'],
-  ['Puddle of Mudd'],
-  ['Seether'], // mode 2 key 0
-  ['Pleymo', 'Play Mo'],
-  ['Soulfy', 'Soul-Fly'],
-  ['Dub Inc', 'Dub. Inc']
+  () => playPlaylist('Couleur3'), // mode 0 key 0
+  () => playPlaylist('aaa_rts'),
+  () => artist('System of A Down'),
+  () => artist('Muse'),
+  () => artist('Twenty One Pilots'),
+  () => artist('Rammstein'),
+  () => artist('Marilyn Manson'),
+  () => artist('ACDC', 'A.C.D.C'),
+  () => artist('Lofofora'),
+  () => artist('Korn'),
+  () => artist('Imagine Dragons'), // mode 1 key 0
+  () => artist('Placebo'),
+  () => artist('Prodigy'),
+  () => artist('Evanescence'),
+  () => artist('IAM', 'I.A.M'),
+  () => artist('Brell'),
+  () => artist('Slipknot', 'Slip-Knot'),
+  () => artist('Noir désir'),
+  () => artist('Architects'),
+  () => artist('Puddle of Mudd'),
+  () => artist('Seether'), // mode 2 key 0
+  () => artist('Pleymo', 'Play Mo'),
+  () => artist('Soulfy', 'Soul-Fly'),
+  () => artist('Dub Inc', 'Dub. Inc')
 ]
 
 // Controller KEY_CODES
@@ -99,7 +96,7 @@ async function run (cmd) {
       resolve(stdout, stderr)
     }
     exec(cmd, trace).unref()
-  }).catch(exception => { if (cmd.indexOf('espeak') === -1) { say(('' + exception).substring(0, 40)) } })
+  }).catch(exception => { if (cmd.indexOf('espeak') === -1) { say(('' + exception).replace(__dirname, '').substring(0, 40)) } })
 }
 
 // Execute actions callbacks one after another
@@ -129,7 +126,7 @@ async function sayMpcStatus () {
 async function artist (name, sayname) {
   return chain([
     () => say((sayname || name), true),
-    () => run('~/play.sh "' + name + '"')
+    () => run(path.join(__dirname, '/play.sh') + ' "' + name + '"')
   ])
 }
 
@@ -140,26 +137,41 @@ async function light (argsString) {
   ])
 }
 
-// Run a helper to output audio to ueboom
-async function pairUeBoom () {
+// Run a helper to output audio to bluetooth
+async function bluetooth () {
   return await chain([
-    () => say('u e boom'),
-    () => run(path.join(__dirname, '/ueboom.sh'))
+    () => say('bluetooth'),
+    () => run(path.join(__dirname, '/bluetooth.sh'))
+  ])
+}
+
+// Run a helper to output audio to bluetooth
+async function combined () {
+  return await chain([
+    () => say('combined'),
+    () => run(path.join(__dirname, '/combined.sh'))
   ])
 }
 
 // Play a playlist with random order
 async function playPlaylist (name) {
-  return await chain([
-    () => say(name),
-    () => run('mpc clear'),
-    () => run('mpc load "' + name + '"'),
-    () => sleep(500),
-    () => run('mpc random'),
-    () => run('mpc shuffle'),
-    () => sleep(500),
-    () => run('mpc play')
-  ])
+  //  Make sure the playlist exsist with mpc lsplaylists
+  return await run('mpc lsplaylist').then(e => ('' + e).split('\n')).then(e => e.filter(n => n)).then(function (list) {
+    if (!list.includes(name)) {
+      console.log('Invalid playlist "' + name + '" use ' + JSON.stringify(list))
+      throw new Error(name + " doesn't exist")
+    }
+    return chain([
+      () => say(name),
+      () => run('mpc clear'),
+      () => run('mpc load "' + name + '"'),
+      () => sleep(500),
+      () => run('mpc random'),
+      () => run('mpc shuffle'),
+      () => sleep(500),
+      () => run('mpc play')
+    ])
+  }).catch(error => say(error))
 }
 
 // Load the list of artists with "mpc list artists"
@@ -246,10 +258,10 @@ async function artistListByIncrement (number) {
 async function playByKeyNumber (index) {
   index = Math.min(favoriteList.length - 1, index)
   index = Math.max(0, index)
-  if (typeof favoriteList[index][0] === 'function') {
-    return favoriteList[index][0]()
+  if (typeof favoriteList[index] !== 'function') {
+    throw new Error('favoriteList must use a function at index ' + index)
   }
-  return await artist(favoriteList[index][0], favoriteList[index][1] || false)
+  return favoriteList[index]()
 }
 
 // Switch to the next mode
@@ -259,38 +271,41 @@ async function nextMode () {
 }
 
 // == Start mapping the keys ==
-mode0.set(KEY_FORWARD, () => run('mpc seek +5'))
-mode0.set(KEY_BACK, () => run('mpc seek -5'))
-mode0.set(KEY_PAUSE, () => run('mpc pause'))
-mode0.set(KEY_PLAY, () => run('mpc toggle'))
-mode0.set(KEY_NEXTSONG, () => run('mpc next'))
-mode0.set(KEY_PREVIOUSSONG, () => run('mpc prev'))
-mode0.set(KEY_VOLUMEDOWN, () => run('pactl set-sink-volume @DEFAULT_SINK@ -15%'))
-mode0.set(KEY_VOLUMEUP, () => run('pactl set-sink-volume @DEFAULT_SINK@ +15%'))
-mode0.set(KEY_MUTE, () => run('pactl set-sink-mute @DEFAULT_SINK@ toggle'))
+modesMap[0].set(KEY_FORWARD, () => run('mpc seek +5'))
+modesMap[0].set(KEY_BACK, () => run('mpc seek -5'))
+modesMap[0].set(KEY_PAUSE, () => run('mpc pause'))
+modesMap[0].set(KEY_PLAY, () => run('mpc toggle'))
+modesMap[0].set(KEY_NEXTSONG, () => run('mpc next'))
+modesMap[0].set(KEY_PREVIOUSSONG, () => run('mpc prev'))
+modesMap[0].set(KEY_VOLUMEDOWN, () => run('pactl set-sink-volume @DEFAULT_SINK@ -15%'))
+modesMap[0].set(KEY_VOLUMEUP, () => run('pactl set-sink-volume @DEFAULT_SINK@ +15%'))
+modesMap[0].set(KEY_MUTE, () => run('pactl set-sink-mute @DEFAULT_SINK@ toggle'))
 
-mode0.set(KEY_WAKEUP, () => say('set mode 1 first'))
-mode0.set(KEY_VIDEO_NEXT, nextMode)
-mode0.set(KEY_F11, () => run('mpc random on'))
-mode0.set(KEY_STOP, () => run('mpc stop'))
-mode0.set(KEY_INFO, () => pairUeBoom())
-mode0.set(KEY_EJECT, () => run(path.join(__dirname, '/play.sh random 1')))
+modesMap[0].set(KEY_WAKEUP, () => say('set mode 1 first'))
+modesMap[0].set(KEY_VIDEO_NEXT, nextMode)
+modesMap[0].set(KEY_F11, () => run('mpc random on'))
+modesMap[0].set(KEY_STOP, () => run('mpc stop'))
+modesMap[0].set(KEY_INFO, () => chain([
+  () => bluetooth(),
+  () => combined()
+]))
+modesMap[0].set(KEY_EJECT, () => run(path.join(__dirname, '/play.sh random 1')))
 
 // Browse by artists
-mode0.set(KEY_MENU, () => artistListLoad(true).then((nb) => say('Reloaded ' + nb + ' artists')))
-mode0.set(KEY_RIGHT, () => artistListByIncrement(+1))
-mode0.set(KEY_LEFT, () => artistListByIncrement(-1))
-mode0.set(KEY_UP, () => artistListByLetter(-1))
-mode0.set(KEY_DOWN, () => artistListByLetter(+1))
-mode0.set(KEY_OK, () => artistListPlaySelection())
-mode0.set(KEY_TIME, () => sayMpcStatus())
+modesMap[0].set(KEY_MENU, () => artistListLoad(true).then((nb) => say('Reloaded ' + nb + ' artists')))
+modesMap[0].set(KEY_RIGHT, () => artistListByIncrement(+1))
+modesMap[0].set(KEY_LEFT, () => artistListByIncrement(-1))
+modesMap[0].set(KEY_UP, () => artistListByLetter(-1))
+modesMap[0].set(KEY_DOWN, () => artistListByLetter(+1))
+modesMap[0].set(KEY_OK, () => artistListPlaySelection())
+modesMap[0].set(KEY_TIME, () => sayMpcStatus())
 
 // Power off only on mode 1 for safety
-mode1.set(KEY_WAKEUP, () => say('Powering off').then(() => run('sudo systemctl poweroff')))
-mode1.set(KEY_PAUSE, () => light('scene_recall 4'))
-mode1.set(KEY_PLAY, () => light('scene_recall 8'))
-mode1.set(KEY_STOP, () => light('state on'))
-mode1.set(KEY_EJECT, () => light('state off'))
+modesMap[1].set(KEY_WAKEUP, () => say('Powering off').then(() => run('sudo systemctl poweroff')))
+modesMap[1].set(KEY_PAUSE, () => light('scene_recall 4'))
+modesMap[1].set(KEY_PLAY, () => light('scene_recall 8'))
+modesMap[1].set(KEY_STOP, () => light('state on'))
+modesMap[1].set(KEY_EJECT, () => light('state off'))
 // Map key KEY_NUMERIC_0 to KEY_NUMERIC_9 in each mode
 modesMap.forEach((map, index) => {
   for (let key = 0; key < 10; key++) {
@@ -306,11 +321,11 @@ input.on('state', function (value, key, kind) {
   // Get the right commandmap based on the mode
   const commands = modesMap[altmode]
 
-  // Use the command for the current key, fallback to mode0.
+  // Use the command for the current key, fallback to mode-0.
   if (commands.has(key)) {
-    commands.get(key)()
-  } else if (mode0.has(key)) {
-    mode0.get(key)()
+    commands.get(key)().catch(e => say(e))
+  } else if (modesMap[0].has(key)) {
+    modesMap[0].get(key)().catch(e => say(e))
   } else {
     // The is not mapped, output it in stdout.
     console.log('State is now:', value, 'for key', key, 'of kind', kind, ', mode ', altmode)
