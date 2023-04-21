@@ -31,6 +31,7 @@ Features:
 - Play specific mpd playlists
 - Play songs by artists
 - Connect to bluetooth devices for audio output
+- Select artists with arrows (speaking names)
 
 Requirements:
 
@@ -39,6 +40,7 @@ Requirements:
 - mpd
 - pulseaudio
 - Mapped controller with ir-keytable (L336 is provided as an example)
+- espeak + mbrola + mbrola-us1
 
 Setup:
 
