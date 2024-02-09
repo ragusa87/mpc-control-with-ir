@@ -130,29 +130,6 @@ async function artist (name, sayname) {
   ])
 }
 
-async function light (argsString) {
-  return await chain([
-    () => say('light ' + argsString, true),
-    () => run(path.join(__dirname, '/light.sh') + ' ' + argsString)
-  ])
-}
-
-// Run a helper to output audio to bluetooth
-async function bluetooth () {
-  return await chain([
-    () => say('bluetooth'),
-    () => run(path.join(__dirname, '/bluetooth.sh'))
-  ])
-}
-
-// Run a helper to output audio to bluetooth
-async function combined () {
-  return await chain([
-    () => say('combined'),
-    () => run(path.join(__dirname, '/combined.sh'))
-  ])
-}
-
 // Play a playlist with random order
 async function playPlaylist (name) {
   //  Make sure the playlist exsist with mpc lsplaylists
@@ -285,10 +262,7 @@ modesMap[0].set(KEY_WAKEUP, () => say('set mode 1 first'))
 modesMap[0].set(KEY_VIDEO_NEXT, nextMode)
 modesMap[0].set(KEY_F11, () => run('mpc random on'))
 modesMap[0].set(KEY_STOP, () => run('mpc stop'))
-modesMap[0].set(KEY_INFO, () => chain([
-  () => bluetooth(),
-  () => combined()
-]))
+
 modesMap[0].set(KEY_EJECT, () => run(path.join(__dirname, '/play.sh random 1')))
 
 // Browse by artists
@@ -302,10 +276,7 @@ modesMap[0].set(KEY_TIME, () => sayMpcStatus())
 
 // Power off only on mode 1 for safety
 modesMap[1].set(KEY_WAKEUP, () => say('Powering off').then(() => run('sudo systemctl poweroff')))
-modesMap[1].set(KEY_PAUSE, () => light('scene_recall 4'))
-modesMap[1].set(KEY_PLAY, () => light('scene_recall 8'))
-modesMap[1].set(KEY_STOP, () => light('state on'))
-modesMap[1].set(KEY_EJECT, () => light('state off'))
+
 // Map key KEY_NUMERIC_0 to KEY_NUMERIC_9 in each mode
 modesMap.forEach((map, index) => {
   for (let key = 0; key < 10; key++) {

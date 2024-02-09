@@ -1,0 +1,26 @@
+FROM balenalib/%%BALENA_MACHINE_NAME%%-node
+ENV PULSE_SERVER=tcp:localhost:4317
+
+RUN mkdir -p /usr/lib/controller
+WORKDIR /usr/lib/controller
+
+# Es-Speak + paplay
+RUN install_packages mbrola mbrola-us1 espeak pulseaudio-utils
+
+# Install ir-codes
+RUN install_packages ir-keytable
+RUN mkdir -p /etc/rc_keymaps/
+COPY L336 /etc/rc_keymaps/L336
+RUN ir-keytable -c -w /etc/rc_keymaps/L336
+
+# Npm install
+COPY package.json /usr/lib/controller/
+COPY package-lock.json /usr/lib/controller/
+RUN npm install
+
+# Main app
+COPY play.sh /usr/lib/controller/play.sh
+COPY playlist.sh /usr/lib/controller/
+COPY main.js /usr/lib/controller/main.js
+CMD ["node", "main.js"]
+
