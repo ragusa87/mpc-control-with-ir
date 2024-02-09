@@ -2,21 +2,22 @@
 # build ir-keytable - it's not available on amd64
 # https://pkgs.alpinelinux.org/packages?name=ir_keytable&branch=edge&repo=&arch=&maintainer=
 # You can try "apk add ir_keytable" instead
-FROM balenalib/amd64-alpine as build
-RUN install_packages build-base alsa-lib-dev argp-standalone eudev-dev libjpeg-turbo-dev linux-headers qt5-qtbase-dev
-# https://git.alpinelinux.org/aports/tree/community/v4l-utils/APKBUILD
-RUN wget https://distfiles.alpinelinux.org/distfiles/edge/v4l-utils-1.24.1.tar.bz2 && \
-    tar -xf v4l-utils-1.24.1.tar.bz2 && \
-    cd v4l-utils-1.24.1 && \
-    ./configure && \
-    make && \
-    make install
+# FROM balenalib/amd64-alpine as build
+# RUN install_packages build-base alsa-lib-dev argp-standalone eudev-dev libjpeg-turbo-dev linux-headers qt5-qtbase-dev
+# # https://git.alpinelinux.org/aports/tree/community/v4l-utils/APKBUILD
+# RUN wget https://distfiles.alpinelinux.org/distfiles/edge/v4l-utils-1.24.1.tar.bz2 && \
+#     tar -xf v4l-utils-1.24.1.tar.bz2 && \
+#     cd v4l-utils-1.24.1 && \
+#     ./configure && \
+#     make && \
+#     make install
 
 FROM balenalib/amd64-alpine-node:18 as base
 # Install ir_keytable (from build above)
-COPY --link --from=build /usr/local/bin/ir-keytable /usr/local/bin/ir-keytable
-COPY --link --from=build /usr/lib/libintl.so.8 /usr/lib/
-COPY --link --from=build /lib/ld-musl-x86_64.so.1 /lib/
+RUN install_packages ir-keytable
+# COPY --link --from=build /usr/local/bin/ir-keytable /usr/local/bin/ir-keytable
+# COPY --link --from=build /usr/lib/libintl.so.8 /usr/lib/
+# COPY --link --from=build /lib/ld-musl-x86_64.so.1 /lib/
 
 ENV PULSE_SERVER=tcp:localhost:4317
 

@@ -13,9 +13,10 @@ RUN wget https://distfiles.alpinelinux.org/distfiles/edge/v4l-utils-1.24.1.tar.b
 
 FROM balenalib/%%BALENA_MACHINE_NAME%%-node:18 as base
 # Install ir_keytable (from build above)
-COPY --from=build /usr/local/bin/ir-keytable /usr/local/bin/ir-keytable
-COPY --from=build /usr/lib/libintl.so.8 /usr/lib/
-COPY --from=build /lib/libc.musl-* /usr/lib/
+RUN install_packages ir-keytable
+#COPY --from=build /usr/local/bin/ir-keytable /usr/local/bin/ir-keytable
+#COPY --from=build /usr/lib/libintl.so.8 /usr/lib/
+#COPY --from=build /lib/libc.musl-* /usr/lib/
 #COPY --from=build /lib/libc.musl-aarch64.so.1 /lib/
 
 ENV PULSE_SERVER=tcp:localhost:4317
