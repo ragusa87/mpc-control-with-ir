@@ -4,7 +4,6 @@
   "description": "",
   "main": "main.js",
   "dependencies": {
-    "espeak-pipe": "0.0.2",
     "linux-input-device": "^2.0.0"
   },
   "devDependencies": {
