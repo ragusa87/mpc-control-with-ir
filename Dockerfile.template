@@ -34,10 +34,12 @@ COPY L336 /etc/rc_keymaps/L336
 # Npm install (with node-gyp depencencies)
 #RUN install_packages python3 build-base
 COPY package.json /usr/lib/controller/
+#COPY package-lock.json /usr/lib/controller/
 RUN npm install 
 
 # Main app
 COPY play.sh /usr/lib/controller/play.sh
 COPY playlist.sh /usr/lib/controller/
 COPY main.js /usr/lib/controller/main.js
-CMD ["/bin/sh", "-c", "/usr/local/bin/ir-keytable -c -w /etc/rc_keymaps/L336 ; node main.js"]
+COPY start.sh /usr/lib/controller/start.sh
+CMD ["/bin/sh", "/usr/lib/controller/start.sh"]
