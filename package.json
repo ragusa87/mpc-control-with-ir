@@ -4,7 +4,7 @@
   "description": "",
   "main": "main.js",
   "dependencies": {
-    "linux-input-device": "^2.0.0"
+    "input-event": "1.2.6"
   },
   "devDependencies": {
     "eslint": "^7.18.0",

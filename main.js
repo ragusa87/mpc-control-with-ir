@@ -1,5 +1,6 @@
-const LinuxInputListener = require('linux-input-device')
-const input = new LinuxInputListener('/dev/input/event0')
+const InputEvent = require('input-event');
+const input = new InputEvent('/dev/input/event0');
+const keyboard = new InputEvent.Keyboard(input);
 const path = require('path')
 
 // === GLOBAL VARS ==
@@ -114,7 +115,7 @@ async function say (text, convertSpecialChars = false) {
 
   // for mbrola languages, install mbrola + mbrola-us1 packages.
   // see https://raspberry-pi.fr/faire-parler-raspberry-pi-espeak/
-  await run('espeak -v mb-us1 "' + text + '" --stdout | paplay')
+  await run('espeak "' + text + '" --stdout | paplay')
 }
 
 // Read the first line of "mpc status" who should be the playing song.
@@ -284,8 +285,13 @@ modesMap.forEach((map, index) => {
   }
 })
 
+
+// State is now: { tssec: 1707504353, tsusec: 320792, type: 1, code: 517, value: 1 } for key undefined of kind undefined , mode  0
+keyboard.on('keydown' , console.log);
+
+
 // When we press a key..
-input.on('state', function (value, key, kind) {
+keyboard.on('keypress', function ({value, code, type}) {
   if (!value) {
     return
   }
@@ -293,18 +299,13 @@ input.on('state', function (value, key, kind) {
   const commands = modesMap[altmode]
 
   // Use the command for the current key, fallback to mode-0.
-  if (commands.has(key)) {
-    commands.get(key)().catch(e => say(e))
-  } else if (modesMap[0].has(key)) {
-    modesMap[0].get(key)().catch(e => say(e))
+  if (commands.has(code)) {
+    commands.get(code)().catch(e => say(e))
+  } else if (modesMap[0].has(code)) {
+    modesMap[0].get(code)().catch(e => say(e))
   } else {
     // The is not mapped, output it in stdout.
-    console.log('State is now:', value, 'for key', key, 'of kind', kind, ', mode ', altmode)
+    console.log('State is now:', value, 'for code', code, 'of type', type, ', mode ', altmode)
   }
 })
 
-// Error handling for inputs
-input.on('error', console.error)
-
-// start by querying for the initial state.
-input.on('open', () => input.query('EV_SW', 0))
